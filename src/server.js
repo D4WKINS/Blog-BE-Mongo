@@ -16,21 +16,21 @@ const server = express();
 
 const { PORT, MONGO_CONNECTION_STRING } = process.env;
 
-const whiteList = ["http://localhost:3000"];
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (whiteList.some((allowedUrl) => allowedUrl === origin)) {
-      callback(null, true);
-    } else {
-      const error = new Error("Not allowed by cors!");
-      error.status = 403;
+// const whiteList = ["http://localhost:3000"];
+// const corsOptions = {
+//   origin: (origin, callback) => {
+//     if (whiteList.some((allowedUrl) => allowedUrl === origin)) {
+//       callback(null, true);
+//     } else {
+//       const error = new Error("Not allowed by cors!");
+//       error.status = 403;
 
-      callback(error);
-    }
-  },
-};
+//       callback(error);
+//     }
+//   },
+// };
 
-server.use(cors(corsOptions));
+server.use(cors());
 
 server.use(express.json());
 

@@ -19,7 +19,7 @@ export const JWTAuthenticate = async user => {
 
 const generateJWT = payload =>
   new Promise((resolve, reject) =>
-    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }, (err, token) => {
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }, (err, token) => { //access token are used for authentication they allow access to the protected routes
       if (err) reject(err)
       resolve(token)
     })

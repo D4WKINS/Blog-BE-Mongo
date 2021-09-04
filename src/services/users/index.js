@@ -15,7 +15,8 @@ usersRouter.post("/register", async (req, res, next) => {
 
     res.status(201).send({ _id })
   } catch (error) {
-    next(error)
+      console.log(error)
+    // next(error)
   }
 })
 usersRouter.get("/", JWTAuthMiddleware, async (req, res, next) => {
@@ -62,9 +63,9 @@ usersRouter.delete("/:userID", JWTAuthMiddleware, adminOnly, async (req, res, ne
 
 usersRouter.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    const { email, password } = req.body // get the email and the password from the body of the request
     // 1. verify credentials
-    const user = await UserModel.checkCredentials(email, password)
+    const user = await UserModel.checkCredentials(email, password) // check if the user exists and if the password is correct
 
     if (user) {
       // 2. Generate tokens if credentials are ok

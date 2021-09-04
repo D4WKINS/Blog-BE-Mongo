@@ -7,7 +7,6 @@ import {
 } from "./validation.js";
 
 const blogsRouter = express.Router();
-
 // get all blogs
 blogsRouter.get("/", async (req, res, next) => {
   try {

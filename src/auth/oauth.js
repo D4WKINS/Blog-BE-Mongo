@@ -4,7 +4,7 @@ import UserModel from "../services/users/schema.js"
 import { JWTAuthenticate } from "./tools.js"
 
 const googleStrategy = new GoogleStrategy(
-  {
+  { //this is the config for google strategy to authenticate the user
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_SECRET,
     callbackURL: "http://localhost:3001/users/googleRedirect", // this needs to match the redirect url configured on console.cloud.google.com
