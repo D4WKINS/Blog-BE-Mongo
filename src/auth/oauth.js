@@ -1,16 +1,17 @@
 import passport from "passport"
-import GoogleStrategy from "passport-google-oauth20"
+import {Strategy} from "passport-google-oauth20"
 import UserModel from "../services/users/schema.js"
 import { JWTAuthenticate } from "./tools.js"
 
-const googleStrategy = new GoogleStrategy(
+const googleStrategy = new Strategy(
   { //this is the config for google strategy to authenticate the user
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_SECRET,
-    callbackURL: "http://localhost:3001/users/googleRedirect", // this needs to match the redirect url configured on console.cloud.google.com
+    callbackURL: process.env.BACKEND_URL + "/user/googleRedirect", // this needs to match the redirect url configured on console.cloud.google.com
   },
   async (accessToken, refreshToken, profile, passportNext) => {
     try {
+      
       // We are going to receive profile info from Google
       console.log(profile)
 
@@ -20,7 +21,7 @@ const googleStrategy = new GoogleStrategy(
       if (user) {
         // 2. If user is already there we are going to create the tokens for him/her
         const tokens = await JWTAuthenticate(user)
-        passportNext(null, { tokens })
+        passportNext(null, { user, tokens })
       } else {
         // 3. If user is not there we are going to create a record and the create the tokens for him/her
 
@@ -43,10 +44,10 @@ const googleStrategy = new GoogleStrategy(
     }
   }
 )
-
+passport.use("google", googleStrategy) // this was missing
 passport.serializeUser(function (user, passportNext) {
   // REQUIRED to have req.user
   passportNext(null, user)
 })
 
-export default googleStrategy
+export default {}

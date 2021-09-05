@@ -12,6 +12,10 @@ import { errorHandler } from "./errorHandlers.js";
 
 import mongoose from "mongoose";
 
+import oauth from "./auth/oauth.js"
+
+import passport from "passport"
+
 const server = express();
 
 const { PORT, MONGO_CONNECTION_STRING } = process.env;
@@ -33,6 +37,8 @@ const { PORT, MONGO_CONNECTION_STRING } = process.env;
 server.use(cors());
 
 server.use(express.json());
+
+server.use(passport.initialize({ session: true }))
 
 // server.use(express.static(publicDirectory));
 
