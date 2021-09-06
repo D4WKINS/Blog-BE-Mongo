@@ -106,6 +106,7 @@ usersRouter.post("/logout", JWTAuthMiddleware, async (req, res, next) => {
 
 usersRouter.get("/googleLogin", passport.authenticate("google", { scope: ["profile", "email"] })) // this endpoint is redirecting users to google page
 
+                                                               
 usersRouter.get("/googleRedirect", passport.authenticate("google"), async (req, res, next) => {
   try {
     // res.send(req.user.tokens)
