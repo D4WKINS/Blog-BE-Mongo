@@ -24,10 +24,10 @@ const googleStrategy = new Strategy(
         passportNext(null, { user, tokens })
       } else {
         // 3. If user is not there we are going to create a record and the create the tokens for him/her
-
+          console.log(profile)
         const newUser = {
           name: profile.name.givenName,
-          surname: profile.name.familyName,
+          surname: profile.name.familyName || "",
           email: profile.emails[0].value,
           role: "User",
           googleId: profile.id,
