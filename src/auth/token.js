@@ -1,36 +1,36 @@
-import createError from "http-errors"
-import atob from "atob" //atob() decodes a base64 encoded string
-
-import UserModel from "../services/users/schema.js"
+import createHttpError from "http-errors"
 import { verifyJWT } from "./tools.js"
+import UserModel from "../services/users/schema.js"
 
 export const JWTAuthMiddleware = async (req, res, next) => {
   // 1. Check if Authorization header is received, if it is not --> trigger an error (401)
-  console.log(req.headers)
-  if (!req.headers.authorization) {
-    next(createError(401, "Please provide credentials in the Authorization header!"))
+
+  console.log(req.cookies)
+
+  if (!req.cookies.accessToken) {
+    next(createHttpError(401, "Please provide credentials in Cookies!"))
   } else {
-    // 2. Extract the token from the authorization header (authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTI0Yjg2OTAwNTk3ZTZkMGNkMmI3Y2UiLCJpYXQiOjE2Mjk4ODA5NTgsImV4cCI6MTYzMDQ4NTc1OH0.wznk3kWrfwSXn5gike8SIKozrR-ppJEn85ypSVXYuTc)
-
     try {
-      const token = req.headers.authorization.replace("Bearer ", "")
+      // 2. Extract the token from the Authorization header (authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTUyZjMzNzdhNWVlYmRlMDhkZThhZjkiLCJpYXQiOjE2MzI5MDU3MTN9.FL17SFz1zSGXbMnsLNxbFrnlgCxU8-FtaTnxbiQr-XM)
 
-      // 3. Verify token
+      const token = req.cookies.accessToken
 
+      // 3. Verify token, if it goes fine we'll get back the payload ({_id: "oijoij12i3oj23"}), otherwise an error is being thrown by the jwt library
       const decodedToken = await verifyJWT(token)
+      console.log(decodedToken)
 
-      // 4. Find the user in db by id
-
+      // 4. Find the user in db by id and attach him to req.user
       const user = await UserModel.findById(decodedToken._id)
 
       if (user) {
         req.user = user
         next()
       } else {
-        next(createError(404, "User not found!"))
+        next(createHttpError(404, "User not found!"))
       }
     } catch (error) {
-      next(createError(401, "Token Expired!"))
+      console.log(error)
+      next(createHttpError(401, "Token not valid!"))
     }
   }
 }

@@ -2,7 +2,8 @@ import express from "express"
 import createError from "http-errors"
 import passport from "passport"
 import UserModel from "./schema.js"
-import { basicAuthMiddleware, JWTAuthMiddleware } from "../../auth/middlewares.js"
+import { JWTAuthMiddleware } from "../../auth/token.js"
+import { basicAuthMiddleware } from "../../auth/basic.js"
 import { adminOnly } from "../../auth/admin.js"
 import { JWTAuthenticate, refreshTokens } from "../../auth/tools.js"
 
@@ -95,9 +96,7 @@ usersRouter.post("/refreshToken", async (req, res, next) => {
 usersRouter.post("/logout", JWTAuthMiddleware, async (req, res, next) => {
   try {
     req.user.refreshToken = null
-
     await req.user.save()
-
     res.send()
   } catch (error) {
     next(error)
@@ -107,14 +106,34 @@ usersRouter.post("/logout", JWTAuthMiddleware, async (req, res, next) => {
 usersRouter.get("/googleLogin", passport.authenticate("google", { scope: ["profile", "email"] })) // this endpoint is redirecting users to google page
 
                                                                
-usersRouter.get("/googleRedirect", passport.authenticate("google"), async (req, res, next) => {
-  try {
-    // res.send(req.user.tokens)
-res.setCookie("accessToken", req.user.tokens.accessToken)
-    res.redirect(`http://localhost:3000?accessToken=${req.user.tokens.accessToken}&refreshToken=${req.user.tokens.refreshToken}`)
-  } catch (error) {
-    next(error)
+// usersRouter.get("/googleRedirect", passport.authenticate("google"), async (req, res, next) => {
+//   try {
+//     // res.send(req.user.tokens)
+//     res.cookie("accessToken", req.user.tokens.accessToken, { 
+//       maxAge: 1000 * 60 * 60 * 24 * 7,
+//       httpOnly: true,
+//       //secure: true,
+//       //sameSite: none
+//     })
+//     res.redirect("http://localhost:3000")
+//     //res.redirect(`http://localhost:3000?accessToken=${req.user.tokens.accessToken}&refreshToken=${req.user.tokens.refreshToken}`)
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+
+usersRouter.get("/googleRedirect",passport.authenticate("google"), async (req ,res, next) => {
+      try {
+          const { tokens } = req.user
+          const { accessToken, refreshToken } = tokens
+
+          res.cookie("accessToken", accessToken)
+          res.cookie("refreshToken", refreshToken, { path: "/users" })
+          res.redirect(`${process.env.FRONTEND_URL}`)
+      } catch (error) {
+          next(error)
+      }
   }
-})
+)
 
 export default usersRouter

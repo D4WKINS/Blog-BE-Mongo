@@ -1,69 +1,44 @@
-import express from "express";
-
-import cors from "cors";
-
-import listEndpoints from "express-list-endpoints";
-
-import usersRouter from "./services/users/index.js";
-
-import blogsRouter from "./services/blogs/index.js";
-
-import { errorHandler } from "./errorHandlers.js";
-
-import mongoose from "mongoose";
-
-import oauth from "./auth/oauth.js"
-
+import express from "express"
+import mongoose from "mongoose"
+import cors from "cors"
+import listEndpoints from "express-list-endpoints"
 import passport from "passport"
+import cookieParser from "cookie-parser"
+import usersRouter from "./services/users/index.js"
+import { unauthorizedHandler, forbiddenHandler, catchAllHandler } from "./errorHandlers.js"
+import GoogleStrategy from "./auth/oauth.js"
 
-const server = express();
+const server = express()
+const port = process.env.PORT || 3001
 
-const { PORT, MONGO_CONNECTION_STRING } = process.env;
+passport.use("google", GoogleStrategy)
 
-// const whiteList = ["http://localhost:3000"];
-// const corsOptions = {
-//   origin: (origin, callback) => {
-//     if (whiteList.some((allowedUrl) => allowedUrl === origin)) {
-//       callback(null, true);
-//     } else {
-//       const error = new Error("Not allowed by cors!");
-//       error.status = 403;
+// ******************** MIDDLEWARES *************************+
 
-//       callback(error);
-//     }
-//   },
-// };
+server.use(cors({ origin: "http://localhost:3000", credentials: true })) // no options means Access-Control-Allow-Origin: "*"
+server.use(express.json())
+server.use(cookieParser())
+server.use(passport.initialize())
 
-server.use(cors());
+// ******************** ROUTES ******************************
 
-server.use(express.json());
+server.use("/users", usersRouter)
 
-server.use(passport.initialize({ session: true }))
+// ********************** ERROR HANDLERS *************************
 
-// server.use(express.static(publicDirectory));
+server.use(unauthorizedHandler)
+server.use(forbiddenHandler)
+server.use(catchAllHandler)
 
-server.use("/user", usersRouter);
+console.table(listEndpoints(server))
 
-server.use("/blogs", blogsRouter);
+mongoose.connect(process.env.MONGO_CONNECTION)
 
-server.use(errorHandler);
-
-console.table(listEndpoints(server));
-
-server.listen(PORT, async () => {
-  try {
-    await mongoose.connect(MONGO_CONNECTION_STRING, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(`✅ Server is running on ${PORT}  and connected to db`);
-  } catch (error) {
-    console.log("Db connection is failed ", error);
-  }
-});
-
-server.on("error", (error) =>
-  console.log(`❌ Server is not running due to : ${error}`)
-);
+mongoose.connection.on("connected", () => {
+  console.log("Mongo connected!")
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`)
+  })
+})
 
 
